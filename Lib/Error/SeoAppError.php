@@ -22,30 +22,6 @@ class SeoAppError {
 		$this->controller = new Controller(null, new CakeResponse);
 	}
 	
-	function error404($params){
-		$this->catch404();
-		$this->runLevenshtein();
-		parent::error404($params);
-	}
-	
-	function missingController($params){
-		$this->catch404();
-		$this->runLevenshtein();
-		parent::missingController($params);
-	}
-	
-	function missingAction($params){
-		$this->catch404();
-		$this->runLevenshtein();
-		parent::missingAction($params);
-	}
-	
-	function missingView($params){
-		$this->catch404();
-		$this->runLevenshtein();
-		parent::missingView($params);
-	}
-	
 	/**
 	* Helper method for use in the application to catch 404 errors if needed
 	* $this->cakeError('catch404');
@@ -220,37 +196,16 @@ class SeoAppError {
 * @author Nick Baker
 */
 class SeoExceptionHandler extends HttpException {
-	public static function handle($error){
+	public static function handle($error, $message = null){
 		$SeoAppError = new SeoAppError();
 		$SeoAppError->catch404();
-		$SeoAppError->runLevenshtein();
-		//return parent::__construct($error->message, 404, NULL);
-		
-		
-		
-		
-		
-		
-		
-
-		try {
-			$error = new ExceptionRenderer($error);
-			$error->render();
-		} catch (Exception $e) {
-			set_error_handler(ErrorHandler::handleException); // Should be using configured ErrorHandler
-			Configure::write('Error.trace', false); // trace is useless here since it's internal
-			$message = sprintf("[%s] %s\n%s", // Keeping same message format
-				get_class($e),
-				$e->getMessage(),
-				$e->getTraceAsString()
-			);
-			trigger_error($message, E_USER_ERROR);
+		if($error->code == 404){
+			$SeoAppError->runLevenshtein();
 		}
 		
-		
-		
-		
-		
+		$text = $message ? $message : $error->message;
+		CakeLog::write('error' . $error->code, $text . '\n\r' . $error->getTraceAsString());
+		ErrorHandler::handleException($error);
 	}
 }
 ?>
