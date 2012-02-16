@@ -224,7 +224,33 @@ class SeoExceptionHandler extends HttpException {
 		$SeoAppError = new SeoAppError();
 		$SeoAppError->catch404();
 		$SeoAppError->runLevenshtein();
-		return parent::__construct($error->message, 404);
+		//return parent::__construct($error->message, 404, NULL);
+		
+		
+		
+		
+		
+		
+		
+
+		try {
+			$error = new ExceptionRenderer($error);
+			$error->render();
+		} catch (Exception $e) {
+			set_error_handler(ErrorHandler::handleException); // Should be using configured ErrorHandler
+			Configure::write('Error.trace', false); // trace is useless here since it's internal
+			$message = sprintf("[%s] %s\n%s", // Keeping same message format
+				get_class($e),
+				$e->getMessage(),
+				$e->getTraceAsString()
+			);
+			trigger_error($message, E_USER_ERROR);
+		}
+		
+		
+		
+		
+		
 	}
 }
 ?>
